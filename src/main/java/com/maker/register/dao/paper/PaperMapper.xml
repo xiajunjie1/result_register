@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.maker.register.dao.paper.PaperMapper">
+    <resultMap id="BaseResultMap" type="com.maker.register.model.FeeUser">
+        <id column="doi" property="doi" jdbcType="VARCHAR" />
+        <result column="title" property="title" ></result>
+        <result column="sn" property="sn" ></result>
+        <result column="jtitle_vol" property="jtitleVol" ></result>
+        <result column="paper_class" property="paperClass" ></result>
+        <result column="informant" property="informant" ></result>
+        <result column="account" property="account" ></result>
+        <result column="email" property="email" ></result>
+        <result column="date" property="date" ></result>
+        <result column="timestamp" property="timestamp" ></result>
+        <result column="thanks" property="thanks" jdbcType="TINYINT" javaType="Integer"></result>
+        <result column="is_grant" property="isGrant" jdbcType="TINYINT" javaType="Integer"></result>
+        <result column="bonus" property="bonus"></result>
+        <result column="purl" property="pUrl"></result>
+        <result column="note" property="note"></result>
+    </resultMap>
+  <insert id="insertPaper" parameterType="com.maker.register.model.Paper">
+      insert ignore into paper_register(doi,title,sn,jtitle_vol,informant,account,email,date,paper_class,timestamp,thanks,is_grant,bonus,purl)values
+      <foreach collection="list" item="p" separator=",">
+        (#{p.doi},#{p.title},#{p.sn},#{p.jtitleVol},#{p.informant},#{p.account},#{p.email},#{p.date},#{p.paperClass},#{p.timestamp},#{p.thanks},#{p.isGrant},#{p.bonus},#{p.pUrl})
+      </foreach>
+
+  </insert>
+
+    <insert id="insertPaperAll" parameterType="com.maker.register.model.Paper">
+        insert into paper_register(doi,title,sn,jtitle_vol,informant,account,email,date,paper_class,timestamp,thanks,is_grant,bonus,purl,note)
+        values
+        <foreach collection="list" item="p" separator=",">
+            (#{p.doi},#{p.title},#{p.sn},#{p.jtitleVol},#{p.informant},#{p.account},#{p.email},#{p.date},#{p.paperClass},#{p.timestamp},#{p.thanks},#{p.isGrant},#{p.bonus},#{p.pUrl},#{p.note})
+        </foreach>
+        on duplicate key update thanks=Values(thanks),is_grant=Values(is_grant),bonus=Values(bonus),note=Values(note)
+
+    </insert>
+    
+    <select id="selectAllPapersByDate" parameterType="map" resultType="com.maker.register.model.Paper">
+        select doi,title,sn,jtitle_vol,paper_class,informant,account,email,date,timestamp,thanks,is_grant,bonus,purl,note from paper_register
+        <where>
+            and date &gt;= #{startDate} and date &lt;= #{endDate}
+            <if test="isGrant!=null">
+                and is_grant=#{isGrant}
+            </if>
+        </where>
+    </select>
+</mapper>

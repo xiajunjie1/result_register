@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.maker.register.dao.result.ResultSummaryMapper">
+    <resultMap id="BaseResultMap" type="com.maker.register.model.ResultSummary">
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="userid" property="userid" ></result>
+        <result column="username" property="username" ></result>
+        <result column="charge" property="charge" ></result>
+        <result column="total_result" property="totalResult" ></result>
+        <result column="paper" property="paper" ></result>
+        <result column="project" property="project" ></result>
+        <result column="reward" property="reward" ></result>
+        <result column="reward_residue" property="rewardResidue" ></result>
+        <result column="reward_residue_last" property="rewardResidueLast" ></result>
+        <result column="charge_residue" property="chargeResidue" ></result>
+        <result column="charge_residue_last" property="chargeResidueLast"></result>
+        <result column="note" property="note"></result>
+        <result column="year" property="year"></result>
+    </resultMap>
+
+    <select id="selectResultSummaryByYear" parameterType="string" resultMap="BaseResultMap">
+        SELECT fu.userid,fu.username,hfl.factcharge charge,pr.bonus as paper,pror.bonus as project,sr.charge_residue as charge_residue_last,sr.reward_residue as reward_residue_last,sr2.note
+        from feeuser fu LEFT JOIN (SELECT hpcfeelog.userid,SUM(hpcfeelog.factcharge) as factcharge from (SELECT hpcfeelog.userid,hpcfeelog.factcharge FROM hpcfeelog where year(hpcfeelog.feemonth)=#{year}) hpcfeelog GROUP BY hpcfeelog.userid)
+        hfl ON fu.userid=hfl.userid LEFT JOIN
+        (SELECT paper_register.account,SUM(paper_register.bonus) as bonus FROM (SELECT paper_register.account,paper_register.bonus from paper_register WHERE year(paper_register.date)=#{year}) paper_register GROUP BY paper_register.account) pr
+        ON fu.userid=pr.account LEFT JOIN
+        (SELECT project_register.account,SUM(project_register.bonus) as bonus FROM (SELECT project_register.account,project_register.bonus FROM project_register WHERE year(project_register.date)=#{year}) project_register GROUP BY project_register.account) pror
+        ON fu.userid=pror.account LEFT JOIN
+        (SELECT result_summary.userid,result_summary.charge_residue,result_summary.reward_residue FROM result_summary where result_summary.year=#{lastYear}) sr ON fu.userid=sr.userid LEFT JOIN
+        (SELECT userid,result_summary.note FROM result_summary where result_summary.year=#{year}) sr2 ON fu.userid=sr2.userid
+        ORDER BY fu.userid;
+    </select>
+
+    <insert id="insertResultSummary" parameterType="com.maker.register.model.ResultSummary">
+        insert into result_summary(id,username,userid,charge,total_result,paper,project,reward,reward_residue
+        ,reward_residue_last,charge_residue,charge_residue_last,note,year)Values
+        <foreach collection="list" item="r" separator=",">
+            (#{r.id},#{r.username},#{r.userid},#{r.charge},#{r.total_result},#{r.paper},#{r.project},
+            #{r.reward},#{r.rewardResidue},#{r.rewardResidueLast},#{r.chargeResidue},#{r.chargeResidueLast},#{r.note},#{r.year})
+
+        </foreach>
+        on duplicate key update charge=Values(charge),total_result=Values(total_result),paper=Values(paper),project=Values(project),
+        reward=Values(reward),reward_residue=Values(reward_residue),reward_residue_last=Values(reward_residue_last),charge_residue=Values(charge_residue),
+        charge_residue_last=Values(charge_residue_last),note=Values(note)
+    </insert>
+</mapper>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.maker.register.dao.feeuser.UserMapper">
+    <resultMap id="BaseResultMap" type="com.maker.register.model.FeeUser">
+        <id column="userid" property="userId" jdbcType="VARCHAR" />
+        <result column="username" property="userName" jdbcType="VARCHAR"></result>
+    </resultMap>
+    <select id="selectAllUser" resultMap="BaseResultMap">
+        select * from feeuser
+    </select>
+</mapper>
